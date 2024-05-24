@@ -9,6 +9,9 @@ let cards;
 let interval; // consultar el uso de setInterval
 let firstCard = null;
 let secondCard = null;
+let firstCardValue = null;
+let secondCardValue = null;
+let clickable = true;
 
 //Items array
 const items = [
@@ -76,9 +79,17 @@ const generateRandom = (size = 4) => {
 
 const matrixGenerator = (cardValues, size = 4) => {
   gameContainer.innerHTML = "";
-  cardValues = [...cardValues, ...cardValues];
   //simple shuffle, DO IT YOURSELF
   //Your code here
+  let tempArray = [...cardValues, ...cardValues];
+  let randomCards = [];
+  for (let i = 0; i < size * size; i++) {
+    const randomIndex = Math.floor(Math.random() * tempArray.length);
+    randomCards.push(tempArray[randomIndex]);
+    //once selected remove the object from temp array
+    tempArray.splice(randomIndex, 1);
+  }
+
   for (let i = 0; i < size * size; i++) {
     /*
         Create Cards
@@ -87,10 +98,10 @@ const matrixGenerator = (cardValues, size = 4) => {
         data-card-values is a custom attribute which stores the names of the cards to match later
       */
     gameContainer.innerHTML += `
-     <div class="card-container" data-card-value="${cardValues[i].name}">
+     <div class="card-container" data-card-value="${randomCards[i].name}">
         <div class="card-before">?</div>
         <div class="card-after">
-        <img src="${cardValues[i].image}" class="image"/></div>
+        <img src="${randomCards[i].image}" class="image"/></div>
      </div>
      `;
   }
@@ -99,13 +110,62 @@ const matrixGenerator = (cardValues, size = 4) => {
 
   //Cards
   cards = document.querySelectorAll(".card-container");
+
+  const cleanCards = () => {
+    firstCard = null;
+    secondCard = null;
+    firstCardValue = null;
+    secondCardValue = null;
+  }
+
+  const checkPair = () => {
+    if (firstCard !== null && secondCard !== null) {
+      if (firstCardValue === secondCardValue) {
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        let matchedCards = gameContainer.querySelectorAll(".matched");
+        if (matchedCards.length === cards.length) {
+          stopGame(true);
+        }
+        cleanCards();
+      } else {
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+        cleanCards();
+      }
+    }
+  }
+
   cards.forEach((card) => {
     card.addEventListener("click", () => {
-      card.classList.add("flipped");
-      movesCounter();
-
+      if (!clickable) {
+        return;
+      }
       //Your code starts here... This is the hard part of this code
-
+      if (card.classList.contains("matched")) {
+        cleanCards();
+      } else {
+        if (firstCard === null) {
+          card.classList.add("flipped");
+          movesCounter();
+          clickable = false;
+          setTimeout(() => {
+            firstCard = card;
+            firstCardValue = card.dataset.cardValue;
+            clickable = true;
+          }, 700);
+        } else {
+          card.classList.add("flipped");
+          movesCounter();
+          clickable = false;
+          setTimeout(() => {
+            secondCard = card;
+            secondCardValue = card.dataset.cardValue;
+            checkPair();
+            clickable = true;
+          }, 700);
+        }
+      }
       //Logic Needed:
       //1. We need to check if the first card is not already matched. We can do that with the class "matched"
       //2. flip the card. If there are no first ones, asign that card as first card and get the value of the card
@@ -125,6 +185,32 @@ const matrixGenerator = (cardValues, size = 4) => {
   });
 };
 
+//Initialize values and func calls
+const initializer = () => {
+  result.innerText = "";
+  winCount = 0;
+  let cardValues = generateRandom();
+  matrixGenerator(cardValues);
+};
+
+const stopGame = (win) => {
+  if(win) {
+    result.innerHTML = `<h2>GANASTE SIIIIIUUUUUUUUUUU</h2><h4>Pasos: ${movesCount}</h4>`
+  } else {
+    result.innerHTML = "";
+  }
+  controls.classList.remove("hide");
+  stopButton.classList.add("hide");
+  startButton.classList.remove("hide");
+  movesCount = 0;
+  seconds = 0;
+  minutes = 0;
+  // timer created with setInterVal needs to be cleared
+  //YOUR CODE HERE
+  clearInterval(interval);
+  timeValue.innerHTML = "";
+};
+
 //Start game
 startButton.addEventListener("click", () => {
   movesCount = 0;
@@ -137,27 +223,10 @@ startButton.addEventListener("click", () => {
   //Function to to start the timer. Again, check setInterval
   //Hint: You already have a function that checks the time each second, use it wisely
   //YOUR CODE HERE
+  interval = setInterval(timeGenerator, 1000);
   moves.innerHTML = `<span>Pasos:</span> ${movesCount}`;
   initializer();
 });
 
 //Stop game
-stopButton.addEventListener(
-  "click",
-  (stopGame = () => {
-    controls.classList.remove("hide");
-    stopButton.classList.add("hide");
-    startButton.classList.remove("hide");
-    // timer created with setInterVal needs to be cleared
-    //YOUR CODE HERE
-  })
-);
-
-//Initialize values and func calls
-const initializer = () => {
-  result.innerText = "";
-  winCount = 0;
-  let cardValues = generateRandom();
-  console.log(cardValues);
-  matrixGenerator(cardValues);
-};
+stopButton.addEventListener("click", () => stopGame(false));
