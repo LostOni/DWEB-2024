@@ -11,4 +11,5 @@ app.use(express.json())
 
 //Aquí inicia
 
-//Pista: res.send NO ENVÍA UN JSON, habrá algo que sí lo haga ?
+//Pista 1: res.send NO ENVÍA UN JSON, habrá algo que sí lo haga ?
+//Pista 2: En el POST, estoy procesando el body de la request, Dónde se ve?
