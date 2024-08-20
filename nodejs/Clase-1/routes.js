@@ -3,6 +3,7 @@ const fs = require('fs');
 const requestHandler = (req, res) => {
     const url = req.url;
     const method = req.method;
+    console.log(url, method);
     if (url === '/creatives' && method === 'GET') {
         res.write('<html>');
         res.write('<head><title>OE</title></head>');
@@ -16,7 +17,9 @@ const requestHandler = (req, res) => {
             body.push(chunk);
         });
         return req.on('end', () => {
+            console.log(body)
             const parseBody = Buffer.concat(body).toString();
+            console.log(parseBody);
             const message = parseBody.split('=')[1];
             fs.writeFile('hello.txt', message, (err) => {
                 res.statusCode = 302;
