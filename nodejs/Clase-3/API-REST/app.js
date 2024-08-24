@@ -37,6 +37,7 @@ app.disable('x-powered-by') // deshabilitar el header X-Powered-By: Express
 
 // Todos los recursos que sean MOVIES se identifica con /movies
 app.get('/movies', (req, res) => {
+  // res.header('Access-Control-Allow-Origin', '*')
   const { genre } = req.query
   if (genre) {
     const filteredMovies = movies.filter(
